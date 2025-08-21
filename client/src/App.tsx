@@ -5,7 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThirdwebProvider } from "@thirdweb-dev/react";
-import { Ethereum } from "@thirdweb-dev/chains";
+import { Flare } from "@thirdweb-dev/chains";
 import { Layout } from "@/components/layout/Layout";
 import Dashboard from "./pages/Dashboard";
 import Predictions from "./pages/Predictions";
@@ -26,7 +26,7 @@ const queryClient = new QueryClient({
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThirdwebProvider
-      activeChain={Ethereum}
+      activeChain={Flare}
       clientId={import.meta.env.VITE_THIRDWEB_CLIENT_ID || "demo"}
       queryClient={queryClient}
     >

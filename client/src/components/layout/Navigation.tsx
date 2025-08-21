@@ -108,7 +108,11 @@ export function Navigation() {
             <div className="block sm:hidden">
               <ConnectWallet 
                 theme="dark"
-                btnTitle="Connect"
+                btnTitle={
+                  connectionStatus === "connected" && address 
+                    ? `${address.slice(0, 4)}...${address.slice(-2)}`
+                    : "Connect"
+                }
                 modalTitle="Connect Your Wallet"
                 className="!bg-primary hover:!bg-primary-dark !text-primary-foreground !border-primary/20 !rounded-lg !px-3 !py-2 !font-medium !transition-all !duration-300 hover:!shadow-glow-primary !text-xs"
               />
