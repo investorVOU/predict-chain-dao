@@ -157,11 +157,11 @@
 
   /* Interactive Surfaces */
   .surface-interactive {
-    @apply transition-all duration-300 ease-smooth;
+    @apply transition-all duration-300 ease-in-out;
   }
 
   .surface-interactive:hover {
-    @apply bg-card-interactive border-border/70 translate-y-[-1px];
+    @apply bg-card/90 border-border/70 translate-y-[-1px];
   }
 
   /* Animation Utilities */
