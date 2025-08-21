@@ -4,7 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { ThirdwebProvider } from "@thirdweb-dev/react";
+import { ThirdwebProvider, Ethereum } from "@thirdweb-dev/react";
 import { Layout } from "@/components/layout/Layout";
 import Dashboard from "./pages/Dashboard";
 import Predictions from "./pages/Predictions";
@@ -13,33 +13,21 @@ import Profile from "./pages/Profile";
 import NFTs from "./pages/NFTs";
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
-
-// Define the Ethereum mainnet configuration that matches ThirdwebProvider's expectations
-const ethereumChain = {
-  chainId: 1,
-  name: "Ethereum Mainnet",
-  slug: "ethereum",
-  chain: "ETH",
-  rpc: ["https://ethereum.publicnode.com"],
-  nativeCurrency: {
-    name: "Ether",
-    symbol: "ETH",
-    decimals: 18,
-  },
-  blockExplorers: [
-    {
-      name: "Etherscan",
-      url: "https://etherscan.io",
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      refetchOnWindowFocus: false,
     },
-  ],
-};
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThirdwebProvider
-      activeChain={ethereumChain}
+      activeChain={Ethereum}
       clientId={import.meta.env.VITE_THIRDWEB_CLIENT_ID || "demo"}
+      queryClient={queryClient}
     >
       <TooltipProvider>
         <Toaster />
