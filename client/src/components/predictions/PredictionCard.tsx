@@ -50,9 +50,10 @@ export function PredictionCard({
 }: PredictionCardProps) {
   const [betAmount, setBetAmount] = useState("0.01");
   const [isPlacingBet, setIsPlacingBet] = useState(false);
+  const [isResolving, setIsResolving] = useState(false);
   const { toast } = useToast();
   const address = useAddress();
-  const { placeBet } = usePredictionMarket(id); // Assuming id is the contract address
+  const { placeBet, resolveMarket } = usePredictionMarket(id); // Assuming id is the contract address
 
   const handlePlaceBet = async (position: 'yes' | 'no') => {
     if (!address) {
@@ -106,8 +107,46 @@ export function PredictionCard({
       setIsPlacingBet(false);
     }
   };
+
+  const handleResolveMarket = async (marketResult: 0 | 1) => { // 0 for Yes, 1 for No
+    if (!address) {
+      toast({
+        title: "Wallet not connected",
+        description: "Please connect your wallet to resolve the market",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsResolving(true);
+
+    try {
+      await resolveMarket({
+        args: [marketResult]
+      });
+
+      toast({
+        title: "Market resolved successfully!",
+        description: `The market was resolved as ${marketResult === 0 ? 'YES' : 'NO'}`,
+      });
+
+    } catch (error: any) {
+      console.error("Error resolving market:", error);
+      toast({
+        title: "Failed to resolve market",
+        description: error.message || "Transaction failed or was cancelled",
+        variant: "destructive"
+      });
+    } finally {
+      setIsResolving(false);
+    }
+  };
+
   const timeRemaining = new Date(endDate).getTime() - Date.now();
   const daysLeft = Math.ceil(timeRemaining / (1000 * 60 * 60 * 24));
+  const isMarketCreator = true; // This should be fetched from context or props
+
+  const isResolved = status === "resolved";
 
   return (
     <motion.div
@@ -136,7 +175,7 @@ export function PredictionCard({
                 status === "resolved" && result === "no" && "bg-destructive/10 text-destructive border-destructive/20"
               )}
             >
-              {isResolved ? `${result?.toUpperCase()} Won` : "Active"}
+              {status === "resolved" ? `${result?.toUpperCase()} Won` : "Active"}
             </Badge>
           </div>
           <p className="text-sm text-muted-foreground line-clamp-2">{description}</p>
@@ -229,6 +268,38 @@ export function PredictionCard({
                 Bet No ({noPercentage}%)
               </Button>
             </div>
+          </div>
+        )}
+
+        {/* Resolution Button for Market Creator */}
+        {status === "active" && isMarketCreator && daysLeft <= 0 && (
+          <div className="flex items-center justify-center space-x-2">
+            <Button
+              size="lg"
+              className="bg-blue-600 hover:bg-blue-700 text-white w-full"
+              onClick={() => handleResolveMarket(0)} // Resolve as YES
+              disabled={isResolving}
+            >
+              {isResolving ? (
+                <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+              ) : (
+                <CheckCircle className="w-4 h-4 mr-1" />
+              )}
+              Resolve as YES
+            </Button>
+            <Button
+              size="lg"
+              className="bg-red-600 hover:bg-red-700 text-white w-full"
+              onClick={() => handleResolveMarket(1)} // Resolve as NO
+              disabled={isResolving}
+            >
+              {isResolving ? (
+                <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+              ) : (
+                <CheckCircle className="w-4 h-4 mr-1" />
+              )}
+              Resolve as NO
+            </Button>
           </div>
         )}
         </CardContent>

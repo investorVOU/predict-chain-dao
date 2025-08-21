@@ -30,7 +30,8 @@ const mockPredictions = [
     participants: 234,
     yesPercentage: 67,
     noPercentage: 33,
-    status: "active" as const
+    status: "active" as const,
+    creator: "0x1234567890123456789012345678901234567890"
   },
   {
     id: "2", 
@@ -42,7 +43,8 @@ const mockPredictions = [
     participants: 567,
     yesPercentage: 52,
     noPercentage: 48,
-    status: "active" as const
+    status: "active" as const,
+    creator: "0x2345678901234567890123456789012345678901"
   },
   {
     id: "3",
@@ -55,7 +57,8 @@ const mockPredictions = [
     yesPercentage: 85,
     noPercentage: 15,
     status: "resolved" as const,
-    result: "yes" as const
+    result: "yes" as const,
+    creator: "0x3456789012345678901234567890123456789012"
   },
   {
     id: "4",
@@ -67,7 +70,8 @@ const mockPredictions = [
     participants: 89,
     yesPercentage: 73,
     noPercentage: 27,
-    status: "active" as const
+    status: "active" as const,
+    creator: "0x4567890123456789012345678901234567890123"
   },
   {
     id: "5",
@@ -79,19 +83,21 @@ const mockPredictions = [
     participants: 178,
     yesPercentage: 61,
     noPercentage: 39,
-    status: "active" as const
+    status: "active" as const,
+    creator: "0x5678901234567890123456789012345678901234"
   },
   {
     id: "6",
     title: "AI Breakthrough 2024",
     description: "Will there be a major AGI breakthrough announced by a tech giant in 2024?",
     category: "Technology",
-    endDate: "2024-12-31",
+    endDate: "2023-12-31",
     totalStaked: 67.3,
     participants: 423,
     yesPercentage: 44,
     noPercentage: 56,
-    status: "active" as const
+    status: "active" as const,
+    creator: "0x6789012345678901234567890123456789012345"
   }
 ];
 
