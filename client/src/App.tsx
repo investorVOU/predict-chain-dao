@@ -23,12 +23,22 @@ const queryClient = new QueryClient({
   },
 });
 
+// Separate QueryClient for ThirdWeb to avoid conflicts
+const thirdwebQueryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60 * 1000, // 1 minute for blockchain data
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThirdwebProvider
       activeChain={Ethereum}
       clientId={import.meta.env.VITE_THIRDWEB_CLIENT_ID || "demo"}
-      queryClient={queryClient}
+      queryClient={thirdwebQueryClient}
     >
       <TooltipProvider>
         <Toaster />
