@@ -145,8 +145,8 @@ export default function NFTs() {
         transition={{ duration: 0.6 }}
         className="space-y-4"
       >
-        <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold text-gradient-primary">NFT Rewards</h1>
+        <div className="text-center space-y-2 px-4">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gradient-primary">NFT Rewards</h1>
           <p className="text-muted-foreground">Collect unique NFTs by participating in PredictChain DAO</p>
           
           {/* Progress */}
@@ -169,11 +169,12 @@ export default function NFTs() {
         </div>
 
         {/* Filter Buttons */}
-        <div className="flex justify-center space-x-2">
+        <div className="flex flex-wrap justify-center gap-2">
           <Button
             variant={filter === "all" ? "default" : "outline"}
             onClick={() => setFilter("all")}
             size="sm"
+            className="flex-shrink-0"
           >
             All NFTs
           </Button>
@@ -181,7 +182,7 @@ export default function NFTs() {
             variant={filter === "earned" ? "default" : "outline"}
             onClick={() => setFilter("earned")}
             size="sm"
-            className="bg-success/10 text-success border-success/20 hover:bg-success/20"
+            className="bg-success/10 text-success border-success/20 hover:bg-success/20 flex-shrink-0"
           >
             <Trophy className="w-4 h-4 mr-2" />
             Earned ({earnedCount})
@@ -190,6 +191,7 @@ export default function NFTs() {
             variant={filter === "available" ? "default" : "outline"}
             onClick={() => setFilter("available")}
             size="sm"
+            className="flex-shrink-0"
           >
             <Gift className="w-4 h-4 mr-2" />
             Available ({totalCount - earnedCount})
@@ -202,7 +204,7 @@ export default function NFTs() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5, staggerChildren: 0.1 }}
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6"
       >
         {filteredNFTs.map((nft, index) => {
           const TypeIcon = typeIcons[nft.type];
@@ -220,7 +222,7 @@ export default function NFTs() {
                 nft.earned ? "shadow-glow-primary" : "opacity-75"
               }`}>
                 {/* NFT Image */}
-                <div className={`aspect-square flex items-center justify-center text-6xl relative ${
+                <div className={`aspect-square flex items-center justify-center text-4xl sm:text-6xl relative ${
                   nft.earned 
                     ? "bg-gradient-to-br from-primary/10 to-secondary/10" 
                     : "bg-muted/20 grayscale"
@@ -250,7 +252,7 @@ export default function NFTs() {
                 </div>
 
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-lg">{nft.name}</CardTitle>
+                  <CardTitle className="text-base sm:text-lg">{nft.name}</CardTitle>
                 </CardHeader>
 
                 <CardContent className="space-y-3">

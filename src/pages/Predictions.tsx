@@ -112,12 +112,12 @@ export default function Predictions() {
         transition={{ duration: 0.6 }}
         className="space-y-4"
       >
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gradient-primary">Prediction Markets</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gradient-primary">Prediction Markets</h1>
             <p className="text-muted-foreground">Discover and participate in decentralized prediction markets</p>
           </div>
-          <Button className="bg-primary hover:bg-primary-dark shadow-glow-primary">
+          <Button className="bg-primary hover:bg-primary-dark shadow-glow-primary w-full sm:w-auto">
             <Plus className="w-5 h-5 mr-2" />
             Create Market
           </Button>
@@ -211,7 +211,7 @@ export default function Predictions() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5, staggerChildren: 0.1 }}
-        className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6"
+        className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6"
       >
         {filteredPredictions.map((prediction, index) => (
           <motion.div

@@ -17,11 +17,10 @@ import {
   DollarSign,
   Users
 } from "lucide-react";
-import { useAddress } from "@thirdweb-dev/react";
+import { useAddress, useConnectionStatus } from "@thirdweb-dev/react";
 
 const mockProfileData = {
   username: "PredictionMaster",
-  walletAddress: "0x742d35Cc6b67e2e825b8dF4E07c4e07",
   joinDate: "March 2024",
   totalPredictions: 47,
   correctPredictions: 32,
@@ -83,7 +82,55 @@ const achievements = [
 
 export default function Profile() {
   const address = useAddress();
-  const displayAddress = address || mockProfileData.walletAddress;
+  const connectionStatus = useConnectionStatus();
+
+  // If not connected, show connection prompt
+  if (connectionStatus !== "connected" || !address) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+          className="text-center space-y-6"
+        >
+          <div className="w-20 h-20 mx-auto bg-primary/10 rounded-full flex items-center justify-center">
+            <User className="w-10 h-10 text-primary" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-foreground mb-2">Connect Your Wallet</h2>
+            <p className="text-muted-foreground">Please connect your wallet to view your profile and participate in predictions</p>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
+  // Generate user-specific data based on wallet address
+  const getUserData = (walletAddress: string) => {
+    const hash = walletAddress.split('').reduce((a, b) => {
+      a = ((a << 5) - a) + b.charCodeAt(0);
+      return a & a;
+    }, 0);
+    
+    const predictions = 15 + (Math.abs(hash) % 50);
+    const accuracy = 55 + (Math.abs(hash) % 35);
+    const earnings = (Math.abs(hash) % 20) + 1;
+    
+    return {
+      ...mockProfileData,
+      totalPredictions: predictions,
+      accuracyRate: accuracy,
+      correctPredictions: Math.floor(predictions * (accuracy / 100)),
+      totalEarnings: earnings,
+      reputation: 300 + (Math.abs(hash) % 700),
+      level: 1 + Math.floor(predictions / 10),
+      experienceToNextLevel: 500 - (predictions * 10)
+    };
+  };
+
+  const userProfile = getUserData(address);
+  const displayAddress = address;
 
   const copyAddress = () => {
     navigator.clipboard.writeText(displayAddress);
@@ -116,7 +163,7 @@ export default function Profile() {
                   </AvatarFallback>
                 </Avatar>
                 <div className="space-y-2">
-                  <h1 className="text-2xl font-bold text-foreground">{mockProfileData.username}</h1>
+                  <h1 className="text-xl md:text-2xl font-bold text-foreground">{userProfile.username}</h1>
                   <div className="flex items-center space-x-2 text-muted-foreground">
                     <Wallet className="w-4 h-4" />
                     <span className="font-mono text-sm">
@@ -138,12 +185,12 @@ export default function Profile() {
                       <ExternalLink className="w-3 h-3" />
                     </Button>
                   </div>
-                  <div className="flex items-center space-x-4">
+                  <div className="flex items-center space-x-4 flex-wrap">
                     <Badge className="bg-primary/10 text-primary border-primary/20">
-                      {mockProfileData.rank}
+                      {userProfile.rank}
                     </Badge>
                     <span className="text-sm text-muted-foreground">
-                      Member since {mockProfileData.joinDate}
+                      Member since {userProfile.joinDate}
                     </span>
                   </div>
                 </div>
@@ -153,15 +200,15 @@ export default function Profile() {
               <div className="text-right space-y-2">
                 <div className="flex items-center justify-end space-x-2">
                   <Star className="w-5 h-5 text-primary" />
-                  <span className="text-lg font-bold text-foreground">Level {mockProfileData.level}</span>
+                  <span className="text-lg font-bold text-foreground">Level {userProfile.level}</span>
                 </div>
                 <div className="w-32">
                   <Progress 
-                    value={(mockProfileData.experienceToNextLevel / (mockProfileData.experienceToNextLevel + 200)) * 100} 
+                    value={(userProfile.experienceToNextLevel / (userProfile.experienceToNextLevel + 200)) * 100} 
                     className="h-2"
                   />
                   <p className="text-xs text-muted-foreground mt-1">
-                    {mockProfileData.experienceToNextLevel} XP to next level
+                    {userProfile.experienceToNextLevel} XP to next level
                   </p>
                 </div>
               </div>
@@ -185,7 +232,7 @@ export default function Profile() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold text-foreground">{mockProfileData.totalPredictions}</p>
+              <p className="text-2xl font-bold text-foreground">{userProfile.totalPredictions}</p>
               <p className="text-xs text-success">+3 this week</p>
             </CardContent>
           </Card>
@@ -204,7 +251,7 @@ export default function Profile() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold text-foreground">{mockProfileData.accuracyRate}%</p>
+              <p className="text-2xl font-bold text-foreground">{userProfile.accuracyRate}%</p>
               <p className="text-xs text-success">Above average</p>
             </CardContent>
           </Card>
@@ -223,8 +270,8 @@ export default function Profile() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold text-foreground">{mockProfileData.totalEarnings} ETH</p>
-              <p className="text-xs text-success">+2.1 ETH this month</p>
+              <p className="text-2xl font-bold text-foreground">{userProfile.totalEarnings} ETH</p>
+              <p className="text-xs text-success">+{(userProfile.totalEarnings * 0.2).toFixed(1)} ETH this month</p>
             </CardContent>
           </Card>
         </motion.div>
@@ -242,14 +289,14 @@ export default function Profile() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold text-foreground">{mockProfileData.reputation}</p>
+              <p className="text-2xl font-bold text-foreground">{userProfile.reputation}</p>
               <p className="text-xs text-success">Top 15%</p>
             </CardContent>
           </Card>
         </motion.div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
         {/* Recent Predictions */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}

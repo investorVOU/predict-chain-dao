@@ -120,12 +120,12 @@ export default function DAO() {
         transition={{ duration: 0.6 }}
         className="space-y-4"
       >
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gradient-primary">DAO Governance</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gradient-primary">DAO Governance</h1>
             <p className="text-muted-foreground">Shape the future of PredictChain through decentralized governance</p>
           </div>
-          <Button className="bg-primary hover:bg-primary-dark shadow-glow-primary">
+          <Button className="bg-primary hover:bg-primary-dark shadow-glow-primary w-full sm:w-auto">
             <Plus className="w-5 h-5 mr-2" />
             Create Proposal
           </Button>

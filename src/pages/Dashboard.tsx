@@ -107,20 +107,20 @@ export default function Dashboard() {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="text-center space-y-4"
+        className="text-center space-y-4 mb-8"
       >
-        <h1 className="text-4xl font-bold text-gradient-primary">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gradient-primary">
           Decentralized Prediction Markets
         </h1>
-        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+        <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto px-4">
           Harness the wisdom of crowds. Make predictions, earn rewards, and shape the future through transparent, on-chain governance.
         </p>
-        <div className="flex items-center justify-center space-x-4">
-          <Button size="lg" className="bg-primary hover:bg-primary-dark shadow-glow-primary">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <Button size="lg" className="bg-primary hover:bg-primary-dark shadow-glow-primary w-full sm:w-auto">
             <Plus className="w-5 h-5 mr-2" />
             Create Market
           </Button>
-          <Button variant="outline" size="lg">
+          <Button variant="outline" size="lg" className="w-full sm:w-auto">
             <TrendingUp className="w-5 h-5 mr-2" />
             Browse Markets
           </Button>
@@ -153,7 +153,7 @@ export default function Dashboard() {
           <Button variant="outline">View All Markets</Button>
         </div>
         
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
           {mockPredictions.map((prediction, index) => (
             <motion.div key={prediction.id} variants={itemVariants}>
               <PredictionCard {...prediction} />
