@@ -15,11 +15,11 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 const App = () => (
-  <ThirdwebProvider
-    activeChain="ethereum"
-    clientId="your-thirdweb-client-id" // Replace with actual client ID
-  >
-    <QueryClientProvider client={queryClient}>
+  <QueryClientProvider client={queryClient}>
+    <ThirdwebProvider
+      activeChain="ethereum"
+      clientId={import.meta.env.VITE_THIRDWEB_CLIENT_ID || "demo"}
+    >
       <TooltipProvider>
         <Toaster />
         <Sonner />
@@ -37,8 +37,8 @@ const App = () => (
           </Layout>
         </BrowserRouter>
       </TooltipProvider>
-    </QueryClientProvider>
-  </ThirdwebProvider>
+    </ThirdwebProvider>
+  </QueryClientProvider>
 );
 
 export default App;
