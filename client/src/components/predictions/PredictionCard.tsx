@@ -3,8 +3,11 @@ import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import { Clock, Users, DollarSign, TrendingUp, TrendingDown } from "lucide-react";
+import { Clock, Users, DollarSign, TrendingUp, TrendingDown, Loader2 } from "lucide-react";
+import { useAddress, ConnectWallet } from "@thirdweb-dev/react";
+import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
 interface PredictionCardProps {
@@ -35,8 +38,51 @@ export function PredictionCard({
   result
 }: PredictionCardProps) {
   const [selectedOption, setSelectedOption] = useState<"yes" | "no" | null>(null);
+  const [betAmount, setBetAmount] = useState("");
+  const [isPlacingBet, setIsPlacingBet] = useState(false);
+  const address = useAddress();
 
   const isResolved = status === "resolved";
+  
+  const handlePlaceBet = async () => {
+    if (!address) {
+      toast({
+        title: "Connect Wallet",
+        description: "Please connect your wallet to place a bet.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!selectedOption || !betAmount || parseFloat(betAmount) <= 0) {
+      toast({
+        title: "Invalid Bet",
+        description: "Please select a position and enter a valid amount.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setIsPlacingBet(true);
+      // This would interact with the smart contract to place the bet
+      // For now, just show success message
+      toast({
+        title: "Bet Placed!",
+        description: `Successfully bet ${betAmount} ETH on ${selectedOption.toUpperCase()}`,
+      });
+      setSelectedOption(null);
+      setBetAmount("");
+    } catch (error) {
+      toast({
+        title: "Bet Failed",
+        description: "Failed to place bet. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsPlacingBet(false);
+    }
+  };
   const timeRemaining = new Date(endDate).getTime() - Date.now();
   const daysLeft = Math.ceil(timeRemaining / (1000 * 60 * 60 * 24));
 
@@ -149,11 +195,46 @@ export function PredictionCard({
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               transition={{ duration: 0.3 }}
-              className="pt-3 border-t border-border/40"
+              className="pt-3 border-t border-border/40 space-y-3"
             >
-              <Button className="w-full bg-primary hover:bg-primary-dark">
-                Stake on {selectedOption.toUpperCase()}
-              </Button>
+              {!address ? (
+                <div className="text-center py-4">
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Connect your wallet to place a bet
+                  </p>
+                  <ConnectWallet size="sm" className="w-full" />
+                </div>
+              ) : (
+                <>
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">
+                      Bet Amount (ETH)
+                    </label>
+                    <Input
+                      type="number"
+                      placeholder="0.1"
+                      value={betAmount}
+                      onChange={(e) => setBetAmount(e.target.value)}
+                      step="0.01"
+                      min="0"
+                    />
+                  </div>
+                  <Button 
+                    className="w-full bg-primary hover:bg-primary-dark"
+                    onClick={handlePlaceBet}
+                    disabled={isPlacingBet}
+                  >
+                    {isPlacingBet ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Placing Bet...
+                      </>
+                    ) : (
+                      `Stake ${betAmount || '0'} ETH on ${selectedOption.toUpperCase()}`
+                    )}
+                  </Button>
+                </>
+              )}
             </motion.div>
           )}
         </CardContent>

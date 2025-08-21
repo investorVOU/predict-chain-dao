@@ -2,6 +2,9 @@
 pragma solidity ^0.8.19;
 
 import "@thirdweb-dev/contracts/base/ERC20Base.sol";
+import "./UserProfile.sol";
+import "./NFTReward.sol";
+import "./DAO.sol";
 
 contract PredictionMarketFactory {
     event MarketCreated(address indexed marketAddress, string title, address indexed creator, uint256 endTime);
@@ -9,18 +12,36 @@ contract PredictionMarketFactory {
     mapping(address => address[]) public userMarkets;
     address[] public allMarkets;
     
+    UserProfile public userProfileContract;
+    NFTReward public nftRewardContract;
+    DAO public daoContract;
+    
+    constructor(address _userProfile, address _nftReward, address _dao) {
+        userProfileContract = UserProfile(_userProfile);
+        nftRewardContract = NFTReward(_nftReward);
+        daoContract = DAO(_dao);
+    }
+    
     function createMarket(
         string memory _title,
         string memory _description,
+        string memory _category,
         uint256 _endTime
     ) external returns (address) {
         require(_endTime > block.timestamp, "End time must be in the future");
         
+        uint256 marketId = allMarkets.length + 1;
+        
         PredictionMarket newMarket = new PredictionMarket(
             _title,
             _description,
+            _category,
             _endTime,
-            msg.sender
+            marketId,
+            msg.sender,
+            address(userProfileContract),
+            address(nftRewardContract),
+            address(daoContract)
         );
         
         address marketAddress = address(newMarket);
@@ -54,11 +75,14 @@ contract PredictionMarket {
         uint256 amount;
         uint256 timestamp;
         bool claimed;
+        uint256 betId;
     }
     
     string public title;
     string public description;
+    string public category;
     uint256 public endTime;
+    uint256 public marketId;
     address public creator;
     address public resolver;
     MarketStatus public status;
@@ -67,22 +91,35 @@ contract PredictionMarket {
     uint256 public totalYesAmount;
     uint256 public totalNoAmount;
     uint256 public totalAmount;
+    uint256 public betCounter;
     
     mapping(address => Bet[]) public userBets;
     mapping(address => uint256) public userYesAmount;
     mapping(address => uint256) public userNoAmount;
     Bet[] public allBets;
     
+    UserProfile public userProfileContract;
+    NFTReward public nftRewardContract;
+    DAO public daoContract;
+    
     uint256 public constant PLATFORM_FEE = 250; // 2.5%
     uint256 public constant FEE_DENOMINATOR = 10000;
+    address public platformOwner;
+    uint256 public collectedFees;
     
     event BetPlaced(address indexed user, Position position, uint256 amount);
     event MarketResolved(Position result);
     event WinningsClaimed(address indexed user, uint256 amount);
     event MarketCancelled();
+    event FeesWithdrawn(address indexed owner, uint256 amount);
     
     modifier onlyCreator() {
         require(msg.sender == creator, "Only creator can call this");
+        _;
+    }
+    
+    modifier onlyPlatformOwner() {
+        require(msg.sender == platformOwner, "Only platform owner can call this");
         _;
     }
     
@@ -100,26 +137,39 @@ contract PredictionMarket {
     constructor(
         string memory _title,
         string memory _description,
+        string memory _category,
         uint256 _endTime,
-        address _creator
+        uint256 _marketId,
+        address _creator,
+        address _userProfile,
+        address _nftReward,
+        address _dao
     ) {
         title = _title;
         description = _description;
+        category = _category;
         endTime = _endTime;
+        marketId = _marketId;
         creator = _creator;
         resolver = _creator;
         status = MarketStatus.Active;
+        platformOwner = _creator; // Creator becomes platform owner initially
+        userProfileContract = UserProfile(_userProfile);
+        nftRewardContract = NFTReward(_nftReward);
+        daoContract = DAO(_dao);
     }
     
     function placeBet(Position _position) external payable onlyActive {
         require(msg.value > 0, "Bet amount must be greater than 0");
         
+        betCounter++;
         Bet memory newBet = Bet({
             user: msg.sender,
             position: _position,
             amount: msg.value,
             timestamp: block.timestamp,
-            claimed: false
+            claimed: false,
+            betId: betCounter
         });
         
         userBets[msg.sender].push(newBet);
@@ -135,6 +185,12 @@ contract PredictionMarket {
         
         totalAmount += msg.value;
         
+        // Record prediction in user profile
+        if (address(userProfileContract) != address(0)) {
+            string memory positionStr = _position == Position.Yes ? "yes" : "no";
+            userProfileContract.recordPrediction(msg.sender, marketId, betCounter, positionStr, msg.value);
+        }
+        
         emit BetPlaced(msg.sender, _position, msg.value);
     }
     
@@ -145,7 +201,22 @@ contract PredictionMarket {
         status = MarketStatus.Resolved;
         result = _result;
         
+        // Update user profiles with prediction results
+        if (address(userProfileContract) != address(0)) {
+            _updateUserProfiles(_result);
+        }
+        
         emit MarketResolved(_result);
+    }
+    
+    function _updateUserProfiles(Position _result) internal {
+        for (uint256 i = 0; i < allBets.length; i++) {
+            Bet memory bet = allBets[i];
+            bool won = (bet.position == _result);
+            uint256 payout = won ? calculateWinnings(bet.user) : 0;
+            
+            userProfileContract.recordPredictionResult(bet.user, marketId, won, payout);
+        }
     }
     
     function cancelMarket() external onlyCreator {
@@ -162,15 +233,22 @@ contract PredictionMarket {
         uint256 winnings = calculateWinnings(msg.sender);
         require(winnings > 0, "No winnings to claim");
         
+        // Calculate platform fee
+        uint256 platformFee = (winnings * PLATFORM_FEE) / FEE_DENOMINATOR;
+        uint256 userWinnings = winnings - platformFee;
+        
+        // Add to collected fees
+        collectedFees += platformFee;
+        
         // Mark all user's bets as claimed
         for (uint i = 0; i < userBets[msg.sender].length; i++) {
             userBets[msg.sender][i].claimed = true;
         }
         
         // Transfer winnings
-        payable(msg.sender).transfer(winnings);
+        payable(msg.sender).transfer(userWinnings);
         
-        emit WinningsClaimed(msg.sender, winnings);
+        emit WinningsClaimed(msg.sender, userWinnings);
     }
     
     function claimRefund() external {
@@ -264,14 +342,24 @@ contract PredictionMarket {
         return (totalNoAmount * 100) / totalAmount;
     }
     
-    // Withdraw platform fees (only callable by contract deployer)
-    function withdrawPlatformFees() external {
-        require(status == MarketStatus.Resolved, "Market not resolved");
+    function withdrawFees() external onlyPlatformOwner {
+        require(collectedFees > 0, "No fees to withdraw");
         
-        uint256 platformFee = (totalAmount * PLATFORM_FEE) / FEE_DENOMINATOR;
-        if (platformFee > 0) {
-            payable(creator).transfer(platformFee);
-        }
+        uint256 amount = collectedFees;
+        collectedFees = 0;
+        
+        payable(platformOwner).transfer(amount);
+        
+        emit FeesWithdrawn(platformOwner, amount);
+    }
+    
+    function updatePlatformOwner(address newOwner) external onlyPlatformOwner {
+        require(newOwner != address(0), "Invalid owner address");
+        platformOwner = newOwner;
+    }
+    
+    function getPlatformStats() external view returns (uint256 totalFees, uint256 contractBalance, address owner) {
+        return (collectedFees, address(this).balance, platformOwner);
     }
     
     receive() external payable {

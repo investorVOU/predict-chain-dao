@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useAddress } from "@thirdweb-dev/react";
+import { useAddress, ConnectWallet } from "@thirdweb-dev/react";
 import { toast } from "@/hooks/use-toast";
 import {
   Dialog,
@@ -150,6 +150,18 @@ export function MarketCreationDialog({ open, onOpenChange }: MarketCreationDialo
           </DialogDescription>
         </DialogHeader>
 
+        {!address ? (
+          <div className="text-center py-8 space-y-4">
+            <div className="p-4 border-2 border-dashed border-border rounded-lg">
+              <Target className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-medium mb-2">Connect Your Wallet</h3>
+              <p className="text-muted-foreground mb-4">
+                You need to connect your wallet to create prediction markets on-chain
+              </p>
+              <ConnectWallet className="mx-auto" />
+            </div>
+          </div>
+        ) : (
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField
@@ -283,6 +295,7 @@ export function MarketCreationDialog({ open, onOpenChange }: MarketCreationDialo
             </div>
           </form>
         </Form>
+        )}
       </DialogContent>
     </Dialog>
   );
