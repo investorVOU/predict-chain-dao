@@ -8,9 +8,9 @@ import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { usePredictionMarket } from "@/hooks/useWeb3Contracts";
 import { useAddress } from "@thirdweb-dev/react";
-import { 
-  Calendar, 
-  Users, 
+import {
+  Calendar,
+  Users,
   DollarSign,
   TrendingUp,
   TrendingDown,
@@ -144,13 +144,13 @@ export function PredictionCard({
 
   const timeRemaining = new Date(endDate).getTime() - Date.now();
   const daysLeft = Math.ceil(timeRemaining / (1000 * 60 * 60 * 24));
-  
+
   // Calculate betting cutoff (1 hour before end time)
   const bettingCutoffTime = new Date(endDate).getTime() - (60 * 60 * 1000); // 1 hour before
   const timeToBettingCutoff = bettingCutoffTime - Date.now();
   const isBettingClosed = timeToBettingCutoff <= 0;
   const hoursUntilBettingEnds = Math.ceil(timeToBettingCutoff / (1000 * 60 * 60));
-  
+
   const isMarketCreator = true; // This should be fetched from context or props
   const isResolved = status === "resolved";
 
@@ -163,7 +163,7 @@ export function PredictionCard({
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between">
             <div className="space-y-2">
-              <Badge 
+              <Badge
                 variant={isResolved ? "secondary" : "default"}
                 className="text-xs"
               >
@@ -173,7 +173,7 @@ export function PredictionCard({
                 {title}
               </CardTitle>
             </div>
-            <Badge 
+            <Badge
               variant={status === "active" ? "default" : "secondary"}
               className={cn(
                 status === "active" && "bg-success/10 text-success border-success/20",
@@ -195,9 +195,9 @@ export function PredictionCard({
                 <Clock className="w-4 h-4 mr-1" />
               </div>
               <p className="text-sm font-medium">
-                {isBettingClosed 
-                  ? "Betting Closed" 
-                  : hoursUntilBettingEnds > 24 
+                {isBettingClosed
+                  ? "Betting Closed"
+                  : hoursUntilBettingEnds > 24
                     ? `${Math.ceil(hoursUntilBettingEnds / 24)}d to bet`
                     : `${hoursUntilBettingEnds}h to bet`
                 }
@@ -224,11 +224,11 @@ export function PredictionCard({
               <span className="text-destructive font-medium">NO {noPercentage}%</span>
             </div>
             <div className="relative">
-              <Progress 
-                value={yesPercentage} 
-                className="h-2 bg-destructive/20" 
+              <Progress
+                value={yesPercentage}
+                className="h-2 bg-destructive/20"
               />
-              <div 
+              <div
                 className="absolute top-0 left-0 h-2 bg-success rounded-full transition-all duration-300"
                 style={{ width: `${yesPercentage}%` }}
               />
@@ -263,8 +263,8 @@ export function PredictionCard({
               <span className="text-sm text-muted-foreground">ETH</span>
             </div>
             <div className="flex items-center justify-between">
-              <Button 
-                size="sm" 
+              <Button
+                size="sm"
                 className="bg-green-600 hover:bg-green-700 text-white flex-1 mr-2"
                 onClick={() => handlePlaceBet('yes')}
                 disabled={isPlacingBet || !address || isBettingClosed}
@@ -276,9 +276,9 @@ export function PredictionCard({
                 )}
                 Bet Yes ({yesPercentage}%)
               </Button>
-              <Button 
-                size="sm" 
-                variant="outline" 
+              <Button
+                size="sm"
+                variant="outline"
                 className="border-red-200 text-red-600 hover:bg-red-50 flex-1"
                 onClick={() => handlePlaceBet('no')}
                 disabled={isPlacingBet || !address || isBettingClosed}
