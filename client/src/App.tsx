@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -14,32 +15,32 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+// Define the Ethereum mainnet configuration that matches ThirdwebProvider's expectations
+const ethereumChain = {
+  chainId: 1,
+  name: "Ethereum Mainnet",
+  slug: "ethereum",
+  chain: "ETH",
+  rpc: ["https://ethereum.publicnode.com"],
+  nativeCurrency: {
+    name: "Ether",
+    symbol: "ETH",
+    decimals: 18,
+  },
+  blockExplorers: [
+    {
+      name: "Etherscan",
+      url: "https://etherscan.io",
+    },
+  ],
+};
+
 const App = () => (
-  <ThirdwebProvider
-    activeChain="ethereum"
-    clientId={import.meta.env.VITE_THIRDWEB_CLIENT_ID || "demo"}
-    supportedChains={[
-      {
-        chainId: 1,
-        name: "Ethereum Mainnet",
-        slug: "ethereum",
-        chain: "ETH",
-        rpc: ["https://ethereum.publicnode.com"],
-        nativeCurrency: {
-          name: "Ether",
-          symbol: "ETH",
-          decimals: 18,
-        },
-        blockExplorers: [
-          {
-            name: "Etherscan",
-            url: "https://etherscan.io",
-          },
-        ],
-      },
-    ]}
-  >
-    <QueryClientProvider client={queryClient}>
+  <QueryClientProvider client={queryClient}>
+    <ThirdwebProvider
+      activeChain={ethereumChain}
+      clientId={import.meta.env.VITE_THIRDWEB_CLIENT_ID || "demo"}
+    >
       <TooltipProvider>
         <Toaster />
         <Sonner />
@@ -57,8 +58,8 @@ const App = () => (
           </Layout>
         </BrowserRouter>
       </TooltipProvider>
-    </QueryClientProvider>
-  </ThirdwebProvider>
+    </ThirdwebProvider>
+  </QueryClientProvider>
 );
 
 export default App;
