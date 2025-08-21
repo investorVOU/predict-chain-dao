@@ -28,7 +28,7 @@ contract PredictionMarketFactory {
         string memory _category,
         uint256 _endTime
     ) external returns (address) {
-        require(_endTime > block.timestamp, "End time must be in the future");
+        require(_endTime > block.timestamp + 2 hours, "End time must be at least 2 hours in the future");
         
         uint256 marketId = allMarkets.length + 1;
         
@@ -82,6 +82,7 @@ contract PredictionMarket {
     string public description;
     string public category;
     uint256 public endTime;
+    uint256 public bettingCutoffTime; // Time when betting stops (before endTime)
     uint256 public marketId;
     address public creator;
     address public resolver;
@@ -125,7 +126,7 @@ contract PredictionMarket {
     
     modifier onlyActive() {
         require(status == MarketStatus.Active, "Market not active");
-        require(block.timestamp < endTime, "Market has ended");
+        require(block.timestamp < bettingCutoffTime, "Betting period has ended");
         _;
     }
     
@@ -149,6 +150,8 @@ contract PredictionMarket {
         description = _description;
         category = _category;
         endTime = _endTime;
+        // Set betting cutoff to 1 hour before market end time to prevent bets during events
+        bettingCutoffTime = _endTime - 1 hours;
         marketId = _marketId;
         creator = _creator;
         resolver = _creator;
@@ -354,6 +357,7 @@ contract PredictionMarket {
         string memory _title,
         string memory _description,
         uint256 _endTime,
+        uint256 _bettingCutoffTime,
         address _creator,
         MarketStatus _status,
         uint256 _totalAmount,
@@ -364,6 +368,7 @@ contract PredictionMarket {
             title,
             description,
             endTime,
+            bettingCutoffTime,
             creator,
             status,
             totalAmount,
@@ -400,6 +405,15 @@ contract PredictionMarket {
     
     function getPlatformStats() external view returns (uint256 totalFees, uint256 contractBalance, address owner) {
         return (collectedFees, address(this).balance, platformOwner);
+    }
+    
+    function isBettingActive() external view returns (bool) {
+        return status == MarketStatus.Active && block.timestamp < bettingCutoffTime;
+    }
+    
+    function getTimeUntilBettingEnds() external view returns (uint256) {
+        if (block.timestamp >= bettingCutoffTime) return 0;
+        return bettingCutoffTime - block.timestamp;
     }
     
     receive() external payable {

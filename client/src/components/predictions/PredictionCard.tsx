@@ -144,8 +144,14 @@ export function PredictionCard({
 
   const timeRemaining = new Date(endDate).getTime() - Date.now();
   const daysLeft = Math.ceil(timeRemaining / (1000 * 60 * 60 * 24));
+  
+  // Calculate betting cutoff (1 hour before end time)
+  const bettingCutoffTime = new Date(endDate).getTime() - (60 * 60 * 1000); // 1 hour before
+  const timeToBettingCutoff = bettingCutoffTime - Date.now();
+  const isBettingClosed = timeToBettingCutoff <= 0;
+  const hoursUntilBettingEnds = Math.ceil(timeToBettingCutoff / (1000 * 60 * 60));
+  
   const isMarketCreator = true; // This should be fetched from context or props
-
   const isResolved = status === "resolved";
 
   return (
@@ -189,7 +195,12 @@ export function PredictionCard({
                 <Clock className="w-4 h-4 mr-1" />
               </div>
               <p className="text-sm font-medium">
-                {daysLeft > 0 ? `${daysLeft}d left` : "Ended"}
+                {isBettingClosed 
+                  ? "Betting Closed" 
+                  : hoursUntilBettingEnds > 24 
+                    ? `${Math.ceil(hoursUntilBettingEnds / 24)}d to bet`
+                    : `${hoursUntilBettingEnds}h to bet`
+                }
               </p>
             </div>
             <div className="space-y-1">
@@ -224,8 +235,20 @@ export function PredictionCard({
             </div>
           </div>
 
+          {/* Betting Closed Notice */}
+          {status === "active" && isBettingClosed && !isResolved && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-center">
+              <p className="text-sm text-yellow-800 font-medium">
+                🔒 Betting has closed for this market
+              </p>
+              <p className="text-xs text-yellow-600 mt-1">
+                Event is in progress. Awaiting resolution.
+              </p>
+            </div>
+          )}
+
           {/* Action Buttons */}
-          {status === "active" && (
+          {status === "active" && !isBettingClosed && (
           <div className="space-y-3">
             <div className="flex items-center space-x-2">
               <Input
@@ -244,7 +267,7 @@ export function PredictionCard({
                 size="sm" 
                 className="bg-green-600 hover:bg-green-700 text-white flex-1 mr-2"
                 onClick={() => handlePlaceBet('yes')}
-                disabled={isPlacingBet || !address}
+                disabled={isPlacingBet || !address || isBettingClosed}
               >
                 {isPlacingBet ? (
                   <Loader2 className="w-4 h-4 mr-1 animate-spin" />
@@ -258,7 +281,7 @@ export function PredictionCard({
                 variant="outline" 
                 className="border-red-200 text-red-600 hover:bg-red-50 flex-1"
                 onClick={() => handlePlaceBet('no')}
-                disabled={isPlacingBet || !address}
+                disabled={isPlacingBet || !address || isBettingClosed}
               >
                 {isPlacingBet ? (
                   <Loader2 className="w-4 h-4 mr-1 animate-spin" />
@@ -272,7 +295,7 @@ export function PredictionCard({
         )}
 
         {/* Resolution Button for Market Creator */}
-        {status === "active" && isMarketCreator && daysLeft <= 0 && (
+        {status === "active" && isMarketCreator && timeRemaining <= 0 && (
           <div className="flex items-center justify-center space-x-2">
             <Button
               size="lg"

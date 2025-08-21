@@ -79,6 +79,9 @@ export function usePredictionMarket(marketAddress: string) {
   const { mutateAsync: placeBet } = useContractWrite(contract, "placeBet");
   const { mutateAsync: resolveMarket } = useContractWrite(contract, "resolveMarket");
   const { mutateAsync: claimWinnings } = useContractWrite(contract, "claimWinnings");
+  const { mutateAsync: claimRefund } = useContractWrite(contract, "claimRefund");
+  const { data: isBettingActive } = useContractRead(contract, "isBettingActive");
+  const { data: getTimeUntilBettingEnds } = useContractRead(contract, "getTimeUntilBettingEnds");
 
   const { data: title } = useContractRead(contract, "title");
   const { data: description } = useContractRead(contract, "description");
@@ -94,6 +97,9 @@ export function usePredictionMarket(marketAddress: string) {
     placeBet,
     resolveMarket,
     claimWinnings,
+    claimRefund,
+    isBettingActive,
+    getTimeUntilBettingEnds,
     title,
     description,
     category,
