@@ -76,6 +76,11 @@ export function PredictionCard({
     setIsPlacingBet(true);
 
     try {
+      // Check if this is a real contract or mock data
+      if (!placeBet) {
+        throw new Error("Contract not deployed - this is demo data");
+      }
+
       // Convert position to enum value (0 = Yes, 1 = No)
       const positionValue = position === 'yes' ? 0 : 1;
 
@@ -97,11 +102,21 @@ export function PredictionCard({
 
     } catch (error: any) {
       console.error("Error placing bet:", error);
-      toast({
-        title: "Failed to place bet",
-        description: error.message || "Transaction failed or was cancelled",
-        variant: "destructive"
-      });
+      
+      // More specific error handling
+      if (error.message?.includes("demo data") || error.message?.includes("Contract not deployed")) {
+        toast({
+          title: "Demo Mode",
+          description: "This is demo data - actual betting requires deployed contracts on Flare Network",
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Failed to place bet",
+          description: error.message || "Transaction failed or was cancelled",
+          variant: "destructive"
+        });
+      }
     } finally {
       setIsPlacingBet(false);
     }
@@ -120,6 +135,11 @@ export function PredictionCard({
     setIsResolving(true);
 
     try {
+      // Check if this is a real contract or mock data
+      if (!resolveMarket) {
+        throw new Error("Contract not deployed - this is demo data");
+      }
+
       await resolveMarket({
         args: [marketResult]
       });
@@ -131,11 +151,21 @@ export function PredictionCard({
 
     } catch (error: any) {
       console.error("Error resolving market:", error);
-      toast({
-        title: "Failed to resolve market",
-        description: error.message || "Transaction failed or was cancelled",
-        variant: "destructive"
-      });
+      
+      // More specific error handling
+      if (error.message?.includes("demo data") || error.message?.includes("Contract not deployed")) {
+        toast({
+          title: "Demo Mode",
+          description: "This is demo data - actual smart contract resolution requires deployed contracts on Flare Network",
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Failed to resolve market",
+          description: error.message || "Transaction failed or was cancelled",
+          variant: "destructive"
+        });
+      }
     } finally {
       setIsResolving(false);
     }

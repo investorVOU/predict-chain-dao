@@ -21,7 +21,7 @@ const categories = ["All", "Cryptocurrency", "Politics", "Technology", "Sports",
 
 const mockPredictions = [
   {
-    id: "1",
+    id: "0x1234567890123456789012345678901234567890",
     title: "Will Bitcoin reach $100,000 by end of 2024?",
     description: "Predict whether Bitcoin's price will hit the $100k milestone before December 31st, 2024.",
     category: "Cryptocurrency",
@@ -34,7 +34,7 @@ const mockPredictions = [
     creator: "0x1234567890123456789012345678901234567890"
   },
   {
-    id: "2", 
+    id: "0x2345678901234567890123456789012345678901", 
     title: "Next US Presidential Election Winner",
     description: "Will the Democratic candidate win the 2024 US Presidential Election?",
     category: "Politics",
@@ -47,7 +47,7 @@ const mockPredictions = [
     creator: "0x2345678901234567890123456789012345678901"
   },
   {
-    id: "3",
+    id: "0x3456789012345678901234567890123456789012",
     title: "Ethereum 2.0 Fully Deployed",
     description: "Will Ethereum complete its transition to Proof of Stake by Q2 2024?",
     category: "Technology",
@@ -61,7 +61,7 @@ const mockPredictions = [
     creator: "0x3456789012345678901234567890123456789012"
   },
   {
-    id: "4",
+    id: "0x4567890123456789012345678901234567890123",
     title: "Tesla Stock Above $300",
     description: "Will Tesla's stock price exceed $300 per share by Q1 2025?",
     category: "Technology",
@@ -74,7 +74,7 @@ const mockPredictions = [
     creator: "0x4567890123456789012345678901234567890123"
   },
   {
-    id: "5",
+    id: "0x5678901234567890123456789012345678901234",
     title: "World Cup 2026 Host",
     description: "Will the USA host more World Cup 2026 matches than Canada and Mexico combined?",
     category: "Sports", 
@@ -87,7 +87,7 @@ const mockPredictions = [
     creator: "0x5678901234567890123456789012345678901234"
   },
   {
-    id: "6",
+    id: "0x6789012345678901234567890123456789012345",
     title: "AI Breakthrough 2024",
     description: "Will there be a major AGI breakthrough announced by a tech giant in 2024?",
     category: "Technology",

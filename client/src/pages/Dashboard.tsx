@@ -49,7 +49,7 @@ const mockStats = [
 
 const mockPredictions = [
   {
-    id: "1",
+    id: "0x1234567890123456789012345678901234567890",
     title: "Will Bitcoin reach $100,000 by end of 2024?",
     description: "Predict whether Bitcoin's price will hit the $100k milestone before December 31st, 2024.",
     category: "Cryptocurrency",
@@ -61,7 +61,7 @@ const mockPredictions = [
     status: "active" as const
   },
   {
-    id: "2", 
+    id: "0x2345678901234567890123456789012345678901", 
     title: "Next US Presidential Election Winner",
     description: "Will the Democratic candidate win the 2024 US Presidential Election?",
     category: "Politics",
@@ -73,7 +73,7 @@ const mockPredictions = [
     status: "active" as const
   },
   {
-    id: "3",
+    id: "0x3456789012345678901234567890123456789012",
     title: "Ethereum 2.0 Fully Deployed",
     description: "Will Ethereum complete its transition to Proof of Stake by Q2 2024?",
     category: "Technology",
