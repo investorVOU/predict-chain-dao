@@ -10,7 +10,7 @@ import {
   Menu
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ConnectWallet, useAddress, useConnectionStatus } from "@thirdweb-dev/react";
+import { useConnect, useAddress, useConnectionStatus, useDisconnect, metamaskWallet, walletConnect } from "@thirdweb-dev/react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -27,7 +27,22 @@ export function Navigation() {
   const location = useLocation();
   const address = useAddress();
   const connectionStatus = useConnectionStatus();
+  const connect = useConnect();
+  const disconnect = useDisconnect();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const handleWalletAction = async () => {
+    if (connectionStatus === "connected") {
+      disconnect();
+    } else {
+      try {
+        const metamask = metamaskWallet();
+        await connect(metamask);
+      } catch (error) {
+        console.error("Failed to connect wallet:", error);
+      }
+    }
+  };
 
   const NavLinks = ({ mobile = false, onLinkClick }: { mobile?: boolean; onLinkClick?: () => void }) => (
     <nav className={cn(
@@ -92,30 +107,30 @@ export function Navigation() {
           <div className="flex items-center space-x-2 md:space-x-4">
             {/* Wallet Connection */}
             <div className="hidden sm:block">
-              <ConnectWallet 
-                theme="dark"
-                btnTitle={
-                  connectionStatus === "connected" && address 
-                    ? `${address.slice(0, 6)}...${address.slice(-4)}`
-                    : "Connect Wallet"
+              <Button
+                onClick={handleWalletAction}
+                className="bg-primary hover:bg-primary-dark text-primary-foreground border-primary/20 rounded-lg px-3 md:px-6 py-2 font-medium transition-all duration-300 hover:shadow-glow-primary text-sm"
+                data-testid="button-connect-wallet-desktop"
+              >
+                {connectionStatus === "connected" && address 
+                  ? `${address.slice(0, 6)}...${address.slice(-4)}`
+                  : "Connect Wallet"
                 }
-                modalTitle="Connect Your Wallet"
-                className="!bg-primary hover:!bg-primary-dark !text-primary-foreground !border-primary/20 !rounded-lg !px-3 !md:px-6 !py-2 !font-medium !transition-all !duration-300 hover:!shadow-glow-primary !text-sm"
-              />
+              </Button>
             </div>
 
             {/* Mobile Wallet (Shorter) */}
             <div className="block sm:hidden">
-              <ConnectWallet 
-                theme="dark"
-                btnTitle={
-                  connectionStatus === "connected" && address 
-                    ? `${address.slice(0, 4)}...${address.slice(-2)}`
-                    : "Connect"
+              <Button
+                onClick={handleWalletAction}
+                className="bg-primary hover:bg-primary-dark text-primary-foreground border-primary/20 rounded-lg px-3 py-2 font-medium transition-all duration-300 hover:shadow-glow-primary text-xs"
+                data-testid="button-connect-wallet-mobile"
+              >
+                {connectionStatus === "connected" && address 
+                  ? `${address.slice(0, 4)}...${address.slice(-2)}`
+                  : "Connect"
                 }
-                modalTitle="Connect Your Wallet"
-                className="!bg-primary hover:!bg-primary-dark !text-primary-foreground !border-primary/20 !rounded-lg !px-3 !py-2 !font-medium !transition-all !duration-300 hover:!shadow-glow-primary !text-xs"
-              />
+              </Button>
             </div>
 
             {/* Mobile Menu Trigger */}

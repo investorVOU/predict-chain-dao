@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useAddress, ConnectWallet } from "@thirdweb-dev/react";
+import { useAddress, useConnect, useConnectionStatus, metamaskWallet } from "@thirdweb-dev/react";
 import { toast } from "@/hooks/use-toast";
 import {
   Dialog,
@@ -62,8 +62,19 @@ const categories = [
 
 export function MarketCreationDialog({ open, onOpenChange }: MarketCreationDialogProps) {
   const address = useAddress();
+  const connect = useConnect();
+  const connectionStatus = useConnectionStatus();
   const queryClient = useQueryClient();
   const [isDeploying, setIsDeploying] = useState(false);
+
+  const handleConnect = async () => {
+    try {
+      const metamask = metamaskWallet();
+      await connect(metamask);
+    } catch (error) {
+      console.error("Failed to connect wallet:", error);
+    }
+  };
 
   const form = useForm<CreateMarketForm>({
     resolver: zodResolver(createMarketSchema),
@@ -158,7 +169,9 @@ export function MarketCreationDialog({ open, onOpenChange }: MarketCreationDialo
               <p className="text-muted-foreground mb-4">
                 You need to connect your wallet to create prediction markets on-chain
               </p>
-              <ConnectWallet className="mx-auto" />
+              <Button onClick={handleConnect} className="bg-primary hover:bg-primary-dark text-primary-foreground">
+                {connectionStatus === "connecting" ? "Connecting..." : "Connect Wallet"}
+              </Button>
             </div>
           </div>
         ) : (

@@ -18,7 +18,6 @@ import {
   CheckCircle,
   Loader2
 } from "lucide-react";
-import { ConnectWallet } from "@thirdweb-dev/react";
 import { cn } from "@/lib/utils";
 
 interface PredictionCardProps {
