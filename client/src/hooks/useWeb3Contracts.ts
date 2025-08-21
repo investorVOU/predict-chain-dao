@@ -2,10 +2,10 @@ import { useContract, useContractRead, useContractWrite } from "@thirdweb-dev/re
 
 // Contract addresses - these would be deployed contract addresses
 // TODO: Replace with actual deployed contract addresses after deployment
-const PREDICTION_MARKET_FACTORY_ADDRESS = process.env.VITE_FACTORY_ADDRESS || "0x...";
-const DAO_ADDRESS = process.env.VITE_DAO_ADDRESS || "0x...";
-const NFT_REWARD_ADDRESS = process.env.VITE_NFT_REWARD_ADDRESS || "0x...";
-const USER_PROFILE_ADDRESS = process.env.VITE_USER_PROFILE_ADDRESS || "0x...";
+const PREDICTION_MARKET_FACTORY_ADDRESS = import.meta.env.VITE_FACTORY_ADDRESS || "0x1234567890123456789012345678901234567890";
+const DAO_ADDRESS = import.meta.env.VITE_DAO_ADDRESS || "0x2345678901234567890123456789012345678901";
+const NFT_REWARD_ADDRESS = import.meta.env.VITE_NFT_REWARD_ADDRESS || "0x3456789012345678901234567890123456789012";
+const USER_PROFILE_ADDRESS = import.meta.env.VITE_USER_PROFILE_ADDRESS || "0x4567890123456789012345678901234567890123";
 
 // Hook for PredictionMarketFactory contract
 export function usePredictionMarketFactory() {
