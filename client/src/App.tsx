@@ -4,7 +4,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThirdwebProvider } from "@thirdweb-dev/react";
-import { Ethereum } from "@thirdweb-dev/chains";
 import { Layout } from "@/components/layout/Layout";
 import Dashboard from "./pages/Dashboard";
 import Predictions from "./pages/Predictions";
@@ -17,8 +16,28 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <ThirdwebProvider
-    activeChain={Ethereum}
+    activeChain="ethereum"
     clientId={import.meta.env.VITE_THIRDWEB_CLIENT_ID || "demo"}
+    supportedChains={[
+      {
+        chainId: 1,
+        name: "Ethereum Mainnet",
+        slug: "ethereum",
+        chain: "ETH",
+        rpc: ["https://ethereum.publicnode.com"],
+        nativeCurrency: {
+          name: "Ether",
+          symbol: "ETH",
+          decimals: 18,
+        },
+        blockExplorers: [
+          {
+            name: "Etherscan",
+            url: "https://etherscan.io",
+          },
+        ],
+      },
+    ]}
   >
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
