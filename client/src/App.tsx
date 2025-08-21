@@ -24,11 +24,12 @@ const queryClient = new QueryClient({
 });
 
 const App = () => (
-  <ThirdwebProvider
-    activeChain={Ethereum}
-    clientId={import.meta.env.VITE_THIRDWEB_CLIENT_ID || "demo"}
-  >
-    <QueryClientProvider client={queryClient}>
+  <QueryClientProvider client={queryClient}>
+    <ThirdwebProvider
+      activeChain={Ethereum}
+      clientId={import.meta.env.VITE_THIRDWEB_CLIENT_ID || "demo"}
+      queryClient={queryClient}
+    >
       <TooltipProvider>
         <Toaster />
         <Sonner />
@@ -46,8 +47,8 @@ const App = () => (
           </Layout>
         </BrowserRouter>
       </TooltipProvider>
-    </QueryClientProvider>
-  </ThirdwebProvider>
+    </ThirdwebProvider>
+  </QueryClientProvider>
 );
 
 export default App;
