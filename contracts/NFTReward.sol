@@ -113,9 +113,45 @@ contract NFTReward is ERC721, ERC721URIStorage, Ownable {
             votingPowerBonus: 150,
             isActive: true
         });
+
+        milestones[MilestoneType.EARLY_ADOPTER] = Milestone({
+            milestoneType: MilestoneType.EARLY_ADOPTER,
+            name: "Early Bird",
+            description: "Among the first 100 users",
+            imageURI: "ipfs://QmEarlyAdopter",
+            votingPowerBonus: 200,
+            isActive: true
+        });
+
+        milestones[MilestoneType.STREAK_MASTER] = Milestone({
+            milestoneType: MilestoneType.STREAK_MASTER,
+            name: "Streak Master",
+            description: "5+ successful predictions in a row",
+            imageURI: "ipfs://QmStreakMaster",
+            votingPowerBonus: 125,
+            isActive: true
+        });
+
+        milestones[MilestoneType.BIG_WINNER] = Milestone({
+            milestoneType: MilestoneType.BIG_WINNER,
+            name: "Big Winner",
+            description: "Won 10+ ETH in total",
+            imageURI: "ipfs://QmBigWinner",
+            votingPowerBonus: 300,
+            isActive: true
+        });
+
+        milestones[MilestoneType.DIAMOND_HANDS] = Milestone({
+            milestoneType: MilestoneType.DIAMOND_HANDS,
+            name: "Diamond Hands",
+            description: "Held positions through major volatility",
+            imageURI: "ipfs://QmDiamondHands",
+            votingPowerBonus: 250,
+            isActive: true
+        });
     }
 
-    function awardMilestone(address user, MilestoneType milestone) external onlyOwner {
+    function awardMilestone(address user, MilestoneType milestone) public onlyOwner {
         require(milestones[milestone].isActive, "Milestone not active");
         require(!userMilestones[user].achieved[milestone], "Milestone already achieved");
 
@@ -133,33 +169,59 @@ contract NFTReward is ERC721, ERC721URIStorage, Ownable {
         emit MilestoneAchieved(user, milestone, tokenId);
     }
 
+    function _awardMilestone(address user, MilestoneType milestone) internal {
+        if (milestones[milestone].isActive && !userMilestones[user].achieved[milestone]) {
+            _tokenIdCounter.increment();
+            uint256 tokenId = _tokenIdCounter.current();
+
+            _safeMint(user, tokenId);
+            _setTokenURI(tokenId, milestones[milestone].imageURI);
+
+            userMilestones[user].achieved[milestone] = true;
+            userMilestones[user].tokenIds.push(tokenId);
+            userMilestones[user].totalVotingPowerBonus += milestones[milestone].votingPowerBonus;
+            tokenMilestones[tokenId] = milestone;
+
+            emit MilestoneAchieved(user, milestone, tokenId);
+        }
+    }
+
     function checkAndAwardMilestones(address user) external {
         // Check wallet connection milestone
         if (!userMilestones[user].achieved[MilestoneType.WALLET_CONNECTED]) {
             hasConnectedWallet[user] = true;
-            awardMilestone(user, MilestoneType.WALLET_CONNECTED);
+            _awardMilestone(user, MilestoneType.WALLET_CONNECTED);
         }
 
         // Check first prediction milestone
         if (userPredictionCount[user] >= 1 && 
             !userMilestones[user].achieved[MilestoneType.FIRST_PREDICTION]) {
-            awardMilestone(user, MilestoneType.FIRST_PREDICTION);
+            _awardMilestone(user, MilestoneType.FIRST_PREDICTION);
         }
 
         // Check successful prediction milestone
         if (successfulPredictions[user] >= 1 && 
             !userMilestones[user].achieved[MilestoneType.SUCCESSFUL_PREDICTION]) {
-            awardMilestone(user, MilestoneType.SUCCESSFUL_PREDICTION);
+            _awardMilestone(user, MilestoneType.SUCCESSFUL_PREDICTION);
         }
 
         // Check governance participation milestone
         if (governanceVotes[user] >= 5 && 
             !userMilestones[user].achieved[MilestoneType.GOVERNANCE_PARTICIPANT]) {
-            awardMilestone(user, MilestoneType.GOVERNANCE_PARTICIPANT);
+            _awardMilestone(user, MilestoneType.GOVERNANCE_PARTICIPANT);
         }
 
-        // Check top predictor milestone (requires external verification)
-        // This would typically be called by the prediction market contract
+        // Check for big winner milestone (10+ ETH in winnings)
+        if (totalWinnings[user] >= 10 ether && 
+            !userMilestones[user].achieved[MilestoneType.BIG_WINNER]) {
+            _awardMilestone(user, MilestoneType.BIG_WINNER);
+        }
+
+        // Check for streak master milestone (5+ successful predictions in a row)
+        if (maxStreak[user] >= 5 && 
+            !userMilestones[user].achieved[MilestoneType.STREAK_MASTER]) {
+            _awardMilestone(user, MilestoneType.STREAK_MASTER);
+        }
     }
 
     function updateUserActivity(

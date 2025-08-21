@@ -185,10 +185,29 @@ contract PredictionMarket {
         
         totalAmount += msg.value;
         
-        // Record prediction in user profile
+        // Record prediction in user profile and update activities for NFT rewards
         if (address(userProfileContract) != address(0)) {
             string memory positionStr = _position == Position.Yes ? "yes" : "no";
             userProfileContract.recordPrediction(msg.sender, marketId, betCounter, positionStr, msg.value);
+        }
+        
+        // Update user activity for NFT milestones
+        if (address(nftRewardContract) != address(0)) {
+            // Check if this is user's first bet to award first prediction milestone
+            if (userBets[msg.sender].length == 1) {
+                try nftRewardContract.checkAndAwardMilestones(msg.sender) {} catch {}
+            }
+            
+            // Update prediction count for milestone tracking
+            uint256 currentPredictions = userBets[msg.sender].length;
+            try nftRewardContract.updateUserActivity(
+                msg.sender,
+                currentPredictions, // predictions
+                0, // successful predictions (updated on resolution)
+                0, // winnings (updated on claim)
+                0, // governance votes
+                0  // streak (updated on resolution)
+            ) {} catch {}
         }
         
         emit BetPlaced(msg.sender, _position, msg.value);
@@ -243,6 +262,27 @@ contract PredictionMarket {
         // Mark all user's bets as claimed
         for (uint i = 0; i < userBets[msg.sender].length; i++) {
             userBets[msg.sender][i].claimed = true;
+        }
+        
+        // Update NFT reward milestones for successful prediction and winnings
+        if (address(nftRewardContract) != address(0)) {
+            uint256 successfulPredictions = 0;
+            
+            // Count successful predictions for this user
+            for (uint i = 0; i < userBets[msg.sender].length; i++) {
+                if (userBets[msg.sender][i].position == result) {
+                    successfulPredictions++;
+                }
+            }
+            
+            try nftRewardContract.updateUserActivity(
+                msg.sender,
+                userBets[msg.sender].length, // total predictions
+                successfulPredictions, // successful predictions
+                userWinnings, // total winnings
+                0, // governance votes (unchanged)
+                0  // streak (could be calculated)
+            ) {} catch {}
         }
         
         // Transfer winnings

@@ -5,9 +5,20 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import { Clock, Users, DollarSign, TrendingUp, TrendingDown, Loader2 } from "lucide-react";
-import { useAddress, ConnectWallet } from "@thirdweb-dev/react";
-import { toast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast";
+import { usePredictionMarket } from "@/hooks/useWeb3Contracts";
+import { useAddress } from "@thirdweb-dev/react";
+import { 
+  Calendar, 
+  Users, 
+  DollarSign,
+  TrendingUp,
+  TrendingDown,
+  Clock,
+  CheckCircle,
+  Loader2
+} from "lucide-react";
+import { ConnectWallet } from "@thirdweb-dev/react";
 import { cn } from "@/lib/utils";
 
 interface PredictionCardProps {
@@ -37,47 +48,59 @@ export function PredictionCard({
   status,
   result
 }: PredictionCardProps) {
-  const [selectedOption, setSelectedOption] = useState<"yes" | "no" | null>(null);
-  const [betAmount, setBetAmount] = useState("");
+  const [betAmount, setBetAmount] = useState("0.01");
   const [isPlacingBet, setIsPlacingBet] = useState(false);
+  const { toast } = useToast();
   const address = useAddress();
+  const { placeBet } = usePredictionMarket(id); // Assuming id is the contract address
 
-  const isResolved = status === "resolved";
-  
-  const handlePlaceBet = async () => {
+  const handlePlaceBet = async (position: 'yes' | 'no') => {
     if (!address) {
       toast({
-        title: "Connect Wallet",
-        description: "Please connect your wallet to place a bet.",
-        variant: "destructive",
+        title: "Wallet not connected",
+        description: "Please connect your wallet to place a bet",
+        variant: "destructive"
       });
       return;
     }
 
-    if (!selectedOption || !betAmount || parseFloat(betAmount) <= 0) {
+    if (!betAmount || parseFloat(betAmount) <= 0) {
       toast({
-        title: "Invalid Bet",
-        description: "Please select a position and enter a valid amount.",
-        variant: "destructive",
+        title: "Invalid amount",
+        description: "Please enter a valid bet amount",
+        variant: "destructive"
       });
       return;
     }
+
+    setIsPlacingBet(true);
 
     try {
-      setIsPlacingBet(true);
-      // This would interact with the smart contract to place the bet
-      // For now, just show success message
-      toast({
-        title: "Bet Placed!",
-        description: `Successfully bet ${betAmount} ETH on ${selectedOption.toUpperCase()}`,
+      // Convert position to enum value (0 = Yes, 1 = No)
+      const positionValue = position === 'yes' ? 0 : 1;
+
+      // Place bet - this will prompt wallet confirmation
+      await placeBet({
+        args: [positionValue],
+        overrides: {
+          value: betAmount // Amount in ETH
+        }
       });
-      setSelectedOption(null);
-      setBetAmount("");
-    } catch (error) {
+
       toast({
-        title: "Bet Failed",
-        description: "Failed to place bet. Please try again.",
-        variant: "destructive",
+        title: "Bet placed successfully!",
+        description: `You bet ${betAmount} ETH on ${position.toUpperCase()}`,
+      });
+
+      // Reset bet amount
+      setBetAmount("0.01");
+
+    } catch (error: any) {
+      console.error("Error placing bet:", error);
+      toast({
+        title: "Failed to place bet",
+        description: error.message || "Transaction failed or was cancelled",
+        variant: "destructive"
       });
     } finally {
       setIsPlacingBet(false);
@@ -163,80 +186,51 @@ export function PredictionCard({
           </div>
 
           {/* Action Buttons */}
-          {!isResolved && (
-            <div className="grid grid-cols-2 gap-3">
-              <Button
-                variant={selectedOption === "yes" ? "default" : "outline"}
-                onClick={() => setSelectedOption("yes")}
-                className={cn(
-                  "flex items-center justify-center space-x-2",
-                  selectedOption === "yes" && "bg-success hover:bg-success/90 text-white border-success"
-                )}
+          {status === "active" && (
+          <div className="space-y-3">
+            <div className="flex items-center space-x-2">
+              <Input
+                type="number"
+                placeholder="0.01"
+                value={betAmount}
+                onChange={(e) => setBetAmount(e.target.value)}
+                step="0.01"
+                min="0.001"
+                className="flex-1"
+              />
+              <span className="text-sm text-muted-foreground">ETH</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <Button 
+                size="sm" 
+                className="bg-green-600 hover:bg-green-700 text-white flex-1 mr-2"
+                onClick={() => handlePlaceBet('yes')}
+                disabled={isPlacingBet || !address}
               >
-                <TrendingUp className="w-4 h-4" />
-                <span>YES</span>
+                {isPlacingBet ? (
+                  <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                ) : (
+                  <TrendingUp className="w-4 h-4 mr-1" />
+                )}
+                Bet Yes ({yesPercentage}%)
               </Button>
-              <Button
-                variant={selectedOption === "no" ? "default" : "outline"}
-                onClick={() => setSelectedOption("no")}
-                className={cn(
-                  "flex items-center justify-center space-x-2",
-                  selectedOption === "no" && "bg-destructive hover:bg-destructive/90 text-white border-destructive"
-                )}
+              <Button 
+                size="sm" 
+                variant="outline" 
+                className="border-red-200 text-red-600 hover:bg-red-50 flex-1"
+                onClick={() => handlePlaceBet('no')}
+                disabled={isPlacingBet || !address}
               >
-                <TrendingDown className="w-4 h-4" />
-                <span>NO</span>
+                {isPlacingBet ? (
+                  <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                ) : (
+                  <TrendingDown className="w-4 h-4 mr-1" />
+                )}
+                Bet No ({noPercentage}%)
               </Button>
             </div>
-          )}
-
-          {selectedOption && !isResolved && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              transition={{ duration: 0.3 }}
-              className="pt-3 border-t border-border/40 space-y-3"
-            >
-              {!address ? (
-                <div className="text-center py-4">
-                  <p className="text-sm text-muted-foreground mb-3">
-                    Connect your wallet to place a bet
-                  </p>
-                  <ConnectWallet size="sm" className="w-full" />
-                </div>
-              ) : (
-                <>
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">
-                      Bet Amount (ETH)
-                    </label>
-                    <Input
-                      type="number"
-                      placeholder="0.1"
-                      value={betAmount}
-                      onChange={(e) => setBetAmount(e.target.value)}
-                      step="0.01"
-                      min="0"
-                    />
-                  </div>
-                  <Button 
-                    className="w-full bg-primary hover:bg-primary-dark"
-                    onClick={handlePlaceBet}
-                    disabled={isPlacingBet}
-                  >
-                    {isPlacingBet ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Placing Bet...
-                      </>
-                    ) : (
-                      `Stake ${betAmount || '0'} ETH on ${selectedOption.toUpperCase()}`
-                    )}
-                  </Button>
-                </>
-              )}
-            </motion.div>
-          )}
+          </div>
+        )}
         </CardContent>
       </Card>
     </motion.div>
