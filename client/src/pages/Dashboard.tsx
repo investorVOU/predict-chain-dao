@@ -1,8 +1,11 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { PredictionCard } from "@/components/predictions/PredictionCard";
+import { MarketCreationDialog } from "@/components/markets/MarketCreationDialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useMarkets } from "@/hooks/useMarkets";
 import { 
   TrendingUp, 
   DollarSign, 
@@ -100,6 +103,8 @@ const itemVariants = {
 };
 
 export default function Dashboard() {
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const { data: markets = [], isLoading } = useMarkets(undefined, "active");
   return (
     <div className="space-y-8">
       {/* Hero Section */}
@@ -116,7 +121,11 @@ export default function Dashboard() {
           Harness the wisdom of crowds. Make predictions, earn rewards, and shape the future through transparent, on-chain governance.
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Button size="lg" className="bg-primary hover:bg-primary-dark shadow-glow-primary w-full sm:w-auto">
+          <Button 
+            size="lg" 
+            className="bg-primary hover:bg-primary-dark shadow-glow-primary w-full sm:w-auto"
+            onClick={() => setShowCreateDialog(true)}
+          >
             <Plus className="w-5 h-5 mr-2" />
             Create Market
           </Button>
@@ -195,6 +204,12 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </motion.div>
+
+      {/* Market Creation Dialog */}
+      <MarketCreationDialog 
+        open={showCreateDialog}
+        onOpenChange={setShowCreateDialog}
+      />
     </div>
   );
 }

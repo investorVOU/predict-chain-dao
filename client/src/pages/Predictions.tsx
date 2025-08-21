@@ -1,17 +1,20 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { PredictionCard } from "@/components/predictions/PredictionCard";
+import { MarketCreationDialog } from "@/components/markets/MarketCreationDialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { useMarkets } from "@/hooks/useMarkets";
 import { 
   Search, 
   Filter, 
   TrendingUp,
   Plus,
   Calendar,
-  DollarSign
+  DollarSign,
+  Activity
 } from "lucide-react";
 
 const categories = ["All", "Cryptocurrency", "Politics", "Technology", "Sports", "Entertainment"];
@@ -95,11 +98,13 @@ const mockPredictions = [
 export default function Predictions() {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const { data: markets = [], isLoading } = useMarkets();
 
-  const filteredPredictions = mockPredictions.filter(prediction => {
-    const matchesCategory = selectedCategory === "All" || prediction.category === selectedCategory;
-    const matchesSearch = prediction.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         prediction.description.toLowerCase().includes(searchQuery.toLowerCase());
+  const filteredPredictions = markets.filter((market: any) => {
+    const matchesCategory = selectedCategory === "All" || market.category === selectedCategory;
+    const matchesSearch = market.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         market.description.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
@@ -117,7 +122,10 @@ export default function Predictions() {
             <h1 className="text-2xl sm:text-3xl font-bold text-gradient-primary">Prediction Markets</h1>
             <p className="text-muted-foreground">Discover and participate in decentralized prediction markets</p>
           </div>
-          <Button className="bg-primary hover:bg-primary-dark shadow-glow-primary w-full sm:w-auto">
+          <Button 
+            className="bg-primary hover:bg-primary-dark shadow-glow-primary w-full sm:w-auto"
+            onClick={() => setShowCreateDialog(true)}
+          >
             <Plus className="w-5 h-5 mr-2" />
             Create Market
           </Button>
