@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThirdwebProvider } from "@thirdweb-dev/react";
+import { Ethereum } from "@thirdweb-dev/chains";
 import { Layout } from "@/components/layout/Layout";
 import Dashboard from "./pages/Dashboard";
 import Predictions from "./pages/Predictions";
@@ -15,11 +16,11 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <ThirdwebProvider
-      activeChain="ethereum"
-      clientId={import.meta.env.VITE_THIRDWEB_CLIENT_ID || "demo"}
-    >
+  <ThirdwebProvider
+    activeChain={Ethereum}
+    clientId={import.meta.env.VITE_THIRDWEB_CLIENT_ID || "demo"}
+  >
+    <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
         <Sonner />
@@ -37,8 +38,8 @@ const App = () => (
           </Layout>
         </BrowserRouter>
       </TooltipProvider>
-    </ThirdwebProvider>
-  </QueryClientProvider>
+    </QueryClientProvider>
+  </ThirdwebProvider>
 );
 
 export default App;
